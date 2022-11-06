@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ExternalBookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,8 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
  */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
-Route::get('/external-books', [BookController::class, 'getExternalBooksByName']);
+Route::get('/external-books', ExternalBookController::class);
+// Route::get('/external-books', [ExternalBookController::class, 'getExternalBooksByName']);
+Route::apiResource('books', BookController::class);
