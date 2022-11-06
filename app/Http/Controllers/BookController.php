@@ -14,13 +14,28 @@ class BookController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
-        $books = Book::all();
+    public function index(Request $request) {
+        $query = $request->query();
         $output = [
             "status_code" => 200,
             "status" => "success",
-            "data" => $books->toArray(),
+            "data" => [],
         ];
+        if (!$query) {
+            $books = Book::all();
+            $output['data'] = $books->toArray();
+        } else {
+            $key = array_keys($query)[0];
+            try {
+                $books = Book::where($key, 'LIKE', '%' . $query[$key] . '%')
+                    ->get();
+                if ($books) {
+                    $output['data'] = $books->toArray();
+                }
+            } catch (QueryException $e) {
+                throw $e->getMessage();
+            }
+        }
         return response($output);
     }
 
@@ -31,24 +46,23 @@ class BookController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(BookRequest $request) {
-        $fields = $request->input();
+        $book = $request->input();
         $output = [
             "status_code" => 201,
             "status" => "success",
             "data" => [],
         ];
         try {
-            $create = Book::create($fields);
-            $output['data'] = ['book' => $fields];
+            $create = Book::create($book);
+            $output['data'] = ['book' => $book];
             return response()->json($output, $output['status_code']);
         } catch (QueryException $e) {
             $message = $e->message;
-            $output['status_code'] = 403;
+            $output['status_code'] = 400;
             $output['status'] = "error";
             $output['message'] = $message;
             return response()->json($output, $output['status_code']);
         }
-
     }
 
     /**
@@ -58,7 +72,25 @@ class BookController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        //
+        $output = [
+            "status_code" => 400,
+            "status" => "not found",
+            "data" => [],
+        ];
+        try {
+            $book = Book::find($id);
+            if ($book) {
+                $data = $book->toArray();
+                $output['status_code'] = 200;
+                $output['status'] = "success";
+                $output['data'] = $data;
+                return response()->json($output, $output['status_code']);
+            } else {
+                return (response()->json($output, $output['status_code']));
+            }
+        } catch (QueryException $e) {
+            throw $e->getMessage();
+        }
     }
 
     /**
@@ -68,8 +100,28 @@ class BookController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id) {
-        //
+    public function update(BookRequest $request, $id) {
+        if ($id) {
+            $output = [
+                "status_code" => 200,
+                "status" => "success",
+                "message" => "",
+                "data" => [],
+            ];
+            $book = $request->input();
+            $findBook = Book::find($id);
+            if ($findBook) {
+                try {
+                    $update = $findBook->Update($book);
+                    $output['message'] = "The book " . $book['name'] . " was updated successfully";
+                    $output['data'] = ['book' => $book];
+                    return response()->json($output, $output['status_code']);
+                } catch (QueryException $e) {
+                    throw $e->getMessage();
+                }
+            }
+        }
+        die("Invalid Book Id");
     }
 
     /**
@@ -79,6 +131,21 @@ class BookController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        //
+        $book = Book::find($id);
+        $book = ($book) ? $book->toArray() : die('book not found');
+        $output = [
+            "status_code" => 204,
+            "status" => "success",
+            "message" => "",
+            "data" => [],
+        ];
+        try {
+            $output['message'] = "The book " . $book['name'] . " was updated successfully";
+            $delete = Book::destroy($id);
+            return response()->json($output, $output['status_code']);
+        } catch (QueryException $e) {
+            throw $e->getMessage();
+        }
+
     }
 }

@@ -16,11 +16,13 @@ return new class extends Migration {
             $table->string('name');
             $table->string('isbn');
             $table->json('authors');
-            $table->string('country');
             $table->integer('number_of_pages');
             $table->string('publisher');
+            $table->string('country');
             $table->date('release_date');
             $table->timestamps();
+            $table->unique(['name', 'isbn']);
+            $table->index(['name', 'publisher', 'country', 'release_date'], 'search_index_keys');
         });
     }
 
