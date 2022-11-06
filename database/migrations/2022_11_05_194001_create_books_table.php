@@ -21,6 +21,8 @@ return new class extends Migration {
             $table->string('country');
             $table->date('release_date');
             $table->timestamps();
+            $table->unique(['name', 'isbn']);
+            $table->index(['name', 'publisher', 'country', 'release_date'], 'search_index_keys');
         });
     }
 

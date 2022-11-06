@@ -14,13 +14,28 @@ class BookController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
-        $books = Book::all();
+    public function index(Request $request) {
+        $query = $request->query();
         $output = [
             "status_code" => 200,
             "status" => "success",
-            "data" => $books->toArray(),
+            "data" => [],
         ];
+        if (!$query) {
+            $books = Book::all();
+            $output['data'] = $books->toArray();
+        } else {
+            $key = array_keys($query)[0];
+            try {
+                $books = Book::where($key, 'LIKE', '%' . $query[$key] . '%')
+                    ->get();
+                if ($books) {
+                    $output['data'] = $books->toArray();
+                }
+            } catch (QueryException $e) {
+                throw $e->getMessage();
+            }
+        }
         return response($output);
     }
 
@@ -73,9 +88,8 @@ class BookController extends Controller {
             } else {
                 return (response()->json($output, $output['status_code']));
             }
-
-        } catch (\Throwable$th) {
-            //throw $th;
+        } catch (QueryException $e) {
+            throw $e->getMessage();
         }
     }
 
