@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Requests\BookRequest;
+use App\Models\Book;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 // use Illuminate\Support\Facades\Http;
@@ -12,7 +15,13 @@ class BookController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index() {
-        //
+        $books = Book::all();
+        $output = [
+            "status_code" => 200,
+            "status" => "success",
+            "data" => $books->toArray(),
+        ];
+        return response($output);
     }
 
     /**
@@ -21,8 +30,25 @@ class BookController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
-        //
+    public function store(BookRequest $request) {
+        $fields = $request->input();
+        $output = [
+            "status_code" => 201,
+            "status" => "success",
+            "data" => [],
+        ];
+        try {
+            $create = Book::create($fields);
+            $output['data'] = ['book' => $fields];
+            return response()->json($output, $output['status_code']);
+        } catch (QueryException $e) {
+            $message = $e->message;
+            $output['status_code'] = 403;
+            $output['status'] = "error";
+            $output['message'] = $message;
+            return response()->json($output, $output['status_code']);
+        }
+
     }
 
     /**

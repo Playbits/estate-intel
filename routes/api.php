@@ -21,4 +21,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/external-books', ExternalBookController::class);
 // Route::get('/external-books', [ExternalBookController::class, 'getExternalBooksByName']);
-Route::apiResource('books', BookController::class);
+Route::apiResource('/v1/books', BookController::class);
