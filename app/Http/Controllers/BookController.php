@@ -25,18 +25,25 @@ class BookController extends Controller {
             $books = Book::all();
             $output['data'] = $books->toArray();
         } else {
-            $key = array_keys($query)[0];
-            try {
-                $books = Book::where($key, 'LIKE', '%' . $query[$key] . '%')
-                    ->get();
-                if ($books) {
-                    $output['data'] = $books->toArray();
-                }
-            } catch (QueryException $e) {
-                throw $e->getMessage();
-            }
+            $data = $this->booksFilter($query);
+            $output['data'] = $data;
         }
         return response($output);
+    }
+
+    protected function booksFilter($query = []) {
+        $key = array_keys($query)[0];
+        $data = [];
+        try {
+            $books = Book::where($key, 'LIKE', '%' . $query[$key] . '%')
+                ->get();
+            if ($books) {
+                $data = $books->toArray();
+            }
+        } catch (QueryException $e) {
+            throw $e->getMessage();
+        }
+        return $data;
     }
 
     /**
