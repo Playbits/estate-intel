@@ -19,7 +19,7 @@ class ExternalBookController extends Controller {
 
     /* This method should return json object of books from external sources  */
     protected function getExternalBooksByName(Request $request) {
-        $book_api = \getenv('EXTERNAL_BOOKS_URL');
+        $book_api = getenv('EXTERNAL_BOOKS_URL');
         $output = [
             "status_code" => 404,
             "status" => "not found",
