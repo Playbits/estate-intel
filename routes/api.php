@@ -22,3 +22,4 @@ use Illuminate\Support\Facades\Route;
 Route::get('/external-books', ExternalBookController::class);
 // Route::get('/external-books', [ExternalBookController::class, 'getExternalBooksByName']);
 Route::apiResource('/v1/books', BookController::class);
+Route::post('/v1/books/{id}/delete', [BookController::class, 'destroy']);
