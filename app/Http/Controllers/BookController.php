@@ -25,18 +25,25 @@ class BookController extends Controller {
             $books = Book::all();
             $output['data'] = $books->toArray();
         } else {
-            $key = array_keys($query)[0];
-            try {
-                $books = Book::where($key, 'LIKE', '%' . $query[$key] . '%')
-                    ->get();
-                if ($books) {
-                    $output['data'] = $books->toArray();
-                }
-            } catch (QueryException $e) {
-                throw $e->getMessage();
-            }
+            $data = $this->booksFilter($query);
+            $output['data'] = $data;
         }
         return response($output);
+    }
+
+    protected function booksFilter($query = []) {
+        $key = array_keys($query)[0];
+        $data = [];
+        try {
+            $books = Book::where($key, 'LIKE', '%' . $query[$key] . '%')
+                ->get();
+            if ($books) {
+                $data = $books->toArray();
+            }
+        } catch (QueryException $e) {
+            throw $e->getMessage();
+        }
+        return $data;
     }
 
     /**
@@ -57,8 +64,8 @@ class BookController extends Controller {
             $output['data'] = ['book' => $book];
             return response()->json($output, $output['status_code']);
         } catch (QueryException $e) {
-            $message = $e->message;
-            $output['status_code'] = 400;
+            $message = $e->getMessage();
+            $output['status_code'] = 500;
             $output['status'] = "error";
             $output['message'] = $message;
             return response()->json($output, $output['status_code']);
@@ -140,9 +147,11 @@ class BookController extends Controller {
             "data" => [],
         ];
         try {
-            $output['message'] = "The book " . $book['name'] . " was updated successfully";
             $delete = Book::destroy($id);
-            return response()->json($output, $output['status_code']);
+            if ($delete) {
+                $output['message'] = "The book " . $book['name'] . " was deleted successfully";
+                return response()->json($output);
+            }
         } catch (QueryException $e) {
             throw $e->getMessage();
         }
